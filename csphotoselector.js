@@ -77,13 +77,13 @@ var CSPhotoSelector = (function(module, $) {
 	 */
 	setAlbums = function(input, id) {
 		var i, len;
+		albums = [];
 		if (!input || input.length === 0) {
 			return;
 		}
 		input = Array.prototype.slice.call(input);
 		input = input.sort(sortPhotos);
 
-		albums = [];
 		if (id) {
 			albums.push({
 				id: id,
@@ -557,9 +557,10 @@ var CSPhotoSelector = (function(module, $) {
 						// Call the callback
 						if (typeof callback === 'function') { callback(); }
 					} else {
-						alert ('Sorry, your friend won\'t let us look through their photos');
+						setAlbums(response.data, id);
+						$albums = $('<div>No photos available.</div>');
+						if (typeof callback === 'function') { callback(); }
 						log('CSPhotoSelector - buildAlbumSelector - No albums returned');
-						return false;
 					}
 				});
 			} else {
@@ -575,6 +576,7 @@ var CSPhotoSelector = (function(module, $) {
 			for (i = 0, len = albums.length; i < len; i += 1) {
 				html += buildAlbumMarkup(albums[i], accessToken);
 			}
+
 			$albums = $(html);
 		};
 
