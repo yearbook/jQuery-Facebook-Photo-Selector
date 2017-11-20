@@ -92,9 +92,9 @@ var CSPhotoSelector = (function(module, $) {
 		}
 
 		for (var i=0; i<input.length; i++){
-			if (input[i].count){
+			//if (input[i].count){
 				albums[albums.length] = input[i];
-			}
+			//}
 		}
 	};
 
