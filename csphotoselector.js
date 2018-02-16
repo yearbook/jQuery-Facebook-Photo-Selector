@@ -108,7 +108,7 @@ var CSPhotoSelector = (function(module, $) {
 			return;
 		}
 		input = Array.prototype.slice.call(input);
-		photos = input;
+		photos = photos.concat(input);
 	};
 	
 	getPhotos = function() {
@@ -591,37 +591,26 @@ var CSPhotoSelector = (function(module, $) {
 		};
 	};
 
-	/**
-	 * Load the Facebook photos and build the markup
-	 */
-	buildPhotoSelector = function(callback, albumId) {
-		var buildSecondMarkup, buildPhotoMarkup;
-		log("buildPhotoSelector");
-
-		photos = [];
-
-		FB.api('/'+ albumId +'/photos?fields=id,picture,source,height,width,images&limit=500', function(response) {
+	getFBPhotos = function(url, callback) {
+        	FB.api(url, function(response) {
 			if (response.data) {
 				setPhotos(response.data);
-				// Build the markup
-				buildSecondMarkup();
-				// Call the callback
-				if (typeof callback === 'function') {
-					callback();					
-					// hide the loader and pagination
-					$loader.hide();
-					$pagination.hide();
-					// set the photo container to active
-					$photosWrapper.addClass('CSPhoto_container_active');
+               			if( response.paging.next) {
+                    			getFBPhotos(response.paging.next, callback);
+                		} else {
+                    			proceedWithMarkup(callback);
 				}
 			} else {
 				log('CSPhotoSelector - showPhotoSelector - No photos returned');
 				return false;
 			}
 		});
+	};		
 		
-		// Build the markup of the photo selector
+	proceedWithMarkup = function(callback) {
 		buildSecondMarkup = function() {
+			photos = getPhotos();
+			
 			//loop through photos
 			var i, len, html = '';
 			// if photos is empty, we need to try again
@@ -641,6 +630,28 @@ var CSPhotoSelector = (function(module, $) {
 					'<span><img src="' + photo.picture + '" alt="" class="CSPhotoSelector_photoAvatar" /></span>' +
 					'</a>';
 		};
+		buildSecondMarkup();
+        	if (typeof callback === 'function') {
+            		callback();
+            		// hide the loader and pagination
+            		$loader.hide();
+            		$pagination.hide();
+            		// set the photo container to active
+            		$photosWrapper.addClass('CSPhoto_container_active');
+        	}
+    	};
+
+    	/**
+     	* Load the Facebook photos and build the markup
+     	*/
+    	buildPhotoSelector = function(callback, albumId) {
+        	var buildSecondMarkup, buildPhotoMarkup;
+        	log("buildPhotoSelector");
+
+        	photos = [];
+
+        	getFBPhotos('/'+ albumId +'/photos?fields=id,picture,source,height,width,images&limit=500', callback);
+
 	};
 
 
